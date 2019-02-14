@@ -3,7 +3,6 @@ namespace Airion.Extensions {
     using UnityEngine;
 
     public static class TransformExtensions {
-        //Breadth-first search
         /// <summary>
         /// Breadth-first search for first equal. Don't use with huge child amount.
         /// </summary>

@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 
 public class Cell : MonoBehaviour {
-    public bool Walkable;
+    public bool IsWalkable;
+    public Vector2Int FieldPosition; 
     
     [SerializeField] Renderer _renderer;
     
@@ -9,7 +10,7 @@ public class Cell : MonoBehaviour {
     
     void Awake() {
         _renderer = GetComponentInChildren<Renderer>();
-        SetVisual(Walkable);
+        SetVisual(IsWalkable);
     }
 
     void SetVisual(bool walkable) {

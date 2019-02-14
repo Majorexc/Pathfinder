@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 using UnityEngine;
 
@@ -14,17 +15,21 @@ public class VisualFieldGenerator : MonoBehaviour {
     [SerializeField] float _innerRadius = 1;
     [SerializeField] float _outerRadius = 1;
 
-    int[,] _field = new int[,] {
-                                   {0, 0, 0, 0, 1},
-                                   {0, 1, 1, 1, 0},
-                                   {0, 0, 1, 1, 1},
-                                   {0, 1, 1, 1, 0},
-                                   {0, 0, 1, 1, 0}
-                               }; 
-    
+    int[,] _rawfield;
+
     [ContextMenu(nameof(GenerateHG))]
     void GenerateHG() {
         transform.DestroyAllChildren();
+
+        var path = EditorUtility.OpenFilePanel("Open map file", "", "txt");
+        if (path.Length == 0) 
+            return;
+
+        var fileContent = File.ReadAllText(path);
+        var fieldAndSize = FieldParserFromText.Parse(fileContent);
+        _rawfield = fieldAndSize.Item1;
+        _fieldSize = fieldAndSize.Item2;
+        
         for (int i = 0; i < _fieldSize.x; i++) {
             for (int j = 0; j < _fieldSize.y; j++) {
                CreateBlock(i, j);
@@ -33,10 +38,13 @@ public class VisualFieldGenerator : MonoBehaviour {
     }
 
     void CreateBlock(int x, int y) {
-        var cellPrefab = PrefabUtility.InstantiatePrefab(_groundBlockPrefab) as GameObject;
-        cellPrefab.transform.position = GetPosByGrid(x, y);
-        cellPrefab.transform.SetParent(transform);
-        cellPrefab.GetComponent<Cell>().Walkable = GetWalkable(x, y);
+        var cell = PrefabUtility.InstantiatePrefab(_groundBlockPrefab) as GameObject;
+        cell.transform.position = GetPosByGrid(x, y);
+        cell.transform.SetParent(transform);
+        var cellScript = cell.GetComponent<Cell>();
+        cellScript.IsWalkable = GetWalkable(x, y);
+        cellScript.FieldPosition = new Vector2Int(x, y);
+        cell.name = $"Cell {x}_{y}";
     }
  
     Vector3 GetPosByGrid(int i, int j) {
@@ -48,7 +56,7 @@ public class VisualFieldGenerator : MonoBehaviour {
 
     bool GetWalkable(int x, int y) {
         try {
-            return _field[x, y] > 0;
+            return _rawfield[x, y] > 0;
         }
         catch (Exception e) {
             Debug.LogError($"[{GetType()}] {e.Message}");
