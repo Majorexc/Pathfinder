@@ -15,21 +15,20 @@ public class TouchHandler : MonoBehaviour {
     [Inject] Field _field;
     
     void Update() {
-        if (Input.GetMouseButtonDown(0)) {
-            var screenPos = Input.mousePosition;
-            if (SelectStartAndTargetCells(screenPos)) {
-                _field.FindPath(_startCell, _targetCell);
-            }
-        }
+        var screenPos = Input.mousePosition;
+        if (Input.GetMouseButtonDown(0)) 
+            SelectStart(screenPos);
+        
+        if (Input.GetMouseButtonDown(1)) 
+            SelectTargetAndStartPathFind(screenPos);        
     }
     
     /// <summary>
-    /// Selects Start and target cells.
-    /// Returns true if found both otherwise false
+    /// Selects Start cell
     /// </summary>
     /// <param name="screenPos"></param>
     /// <returns></returns>
-    bool SelectStartAndTargetCells(Vector3 screenPos) {
+    void SelectStart(Vector3 screenPos) {
         var ray = _cam.ScreenPointToRay(screenPos);
         
         if (Physics.Raycast(ray, out RaycastHit hit)) {
@@ -37,28 +36,46 @@ public class TouchHandler : MonoBehaviour {
             if (cell != null) {
                 // We don't need to find path to/from not walkable cell
                 if (!cell.IsWalkable)
-                    return false;
+                    return;
                 
-                // Just clear start and dest cells if target cell already exist
-                if (_targetCell != null) {
-                    _targetCell.Clear();
+                // Just clear start
+                if (_startCell != null) {
                     _startCell.Clear();
-                    _targetCell = null;
                     _startCell = null;
                 }
                 
-                if (_startCell == null) {
-                    _startCell = cell;
-                    _startCell.SetAsStartCell();
-                } else {
-                    // We've found target cell
-                    _targetCell = cell;
-                    _targetCell.SetAsTargetCell();
-                    return true;
-                }
+                _startCell = cell;
+                _startCell.SetAsStartCell();
             }
         }
+    }
 
-        return false;
+    /// <summary>
+    /// Selects target cell and runs pathfinding
+    /// </summary>
+    /// <param name="screenPos"></param>
+    /// <returns></returns>
+    void SelectTargetAndStartPathFind(Vector3 screenPos) {
+        var ray = _cam.ScreenPointToRay(screenPos);
+        if (Physics.Raycast(ray, out RaycastHit hit)) {
+            var cell = hit.collider.GetComponentInParent<Cell>();
+            if (cell != null) {
+                // We don't need to find path to/from not walkable cell
+                if (!cell.IsWalkable)
+                    return;
+                
+                // Just clear target
+                if (_targetCell != null) {
+                    _targetCell.Clear();
+                    _targetCell = null;
+                }
+                
+                _targetCell = cell;
+                _targetCell.SetAsTargetCell();
+                
+                if (_startCell != null && _targetCell != null)
+                    _field.FindPath(_startCell, _targetCell);
+            }
+        }
     }
 }
