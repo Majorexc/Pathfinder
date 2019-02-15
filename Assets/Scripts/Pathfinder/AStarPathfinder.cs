@@ -1,6 +1,21 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// A* (A star) Implementation of pathfinding algorithm.
+/// The most common algorithm for Games, Robotics and many others.
+/// It's the most flexible/resource-intensive algorithm
+/// There is an AStar optimized algorithm names JPS (Jump Point Search).
+/// But it fits only for uniform-cost field.
+/// Due to heuristic as a part of AStar is better if we want to add some types of ground which changes cost (like mud or smth else).
+/// Or if we want to found more smooth path.
+///
+/// If we speak about this implementation. There are some points which can be optimized.
+/// At first sight:
+///  * We can use bitmask for field model to decrease memory usage.
+///  * We can use heap for openSet. It will greatly reduce time spent to finding a path
+///  * More ...
+/// </summary>
 public class AStarPathfinder : APathfinder {
     public override Node[] FindPath(Vector2Int startPos, Vector2Int targetPos) {
         Node startNode = _field[startPos.x, startPos.y];
@@ -8,35 +23,38 @@ public class AStarPathfinder : APathfinder {
 
         List<Node> openSet = new List<Node>();
         HashSet<Node> closedSet = new HashSet<Node>();
+        
         openSet.Add(startNode);
-
+        
+        // Algorithm will be completed when openSet becomes empty
         while (openSet.Count > 0) {
             Node node = openSet[0];
-            for (int i = 1; i < openSet.Count; i ++) {
-                if (openSet[i].fCost < node.fCost || openSet[i].fCost == node.fCost) {
-                    if (openSet[i].hCost < node.hCost)
+            for (int i = 1; i < openSet.Count; i++) {
+                if (openSet[i].FCost < node.FCost || Mathf.Approximately(openSet[i].FCost, node.FCost)) {
+                    if (openSet[i].HCost < node.HCost)
                         node = openSet[i];
                 }
             }
 
             openSet.Remove(node);
             closedSet.Add(node);
-
+            
+            // Or if we find target node
             if (node == targetNode) {
                 var path = RetracePath(startNode, targetNode);
                 return path;
             }
 
             foreach (Node neighbour in GetNeighbours(node)) {
-                if (!neighbour._walkable || closedSet.Contains(neighbour)) {
+                if (!neighbour.Walkable || closedSet.Contains(neighbour)) {
                     continue;
                 }
 
-                int newCostToNeighbour = node.gCost + GetHeuristic(node, neighbour);
-                if (newCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour)) {
-                    neighbour.gCost = newCostToNeighbour;
-                    neighbour.hCost = GetHeuristic(neighbour, targetNode);
-                    neighbour.parent = node;
+                float neighborCost = node.GCost + GetHeuristic(node, neighbour);
+                if (neighborCost < neighbour.GCost || !openSet.Contains(neighbour)) {
+                    neighbour.GCost = neighborCost;
+                    neighbour.HCost = GetHeuristic(neighbour, targetNode);
+                    neighbour.Parent = node;
 
                     if (!openSet.Contains(neighbour))
                         openSet.Add(neighbour);
@@ -49,12 +67,15 @@ public class AStarPathfinder : APathfinder {
     Node[] RetracePath(Node startNode, Node endNode) {
         List<Node> path = new List<Node>();
         Node currentNode = endNode;
+        
         while (currentNode != startNode) {
             path.Add(currentNode);
-            currentNode = currentNode.parent;
+            currentNode = currentNode.Parent;
         }
+        
         path.Add(startNode);
         path.Reverse();
+        
         return path.ToArray();
     }
     
@@ -64,9 +85,9 @@ public class AStarPathfinder : APathfinder {
     /// <param name="nodeA"></param>
     /// <param name="nodeB"></param>
     /// <returns></returns>
-    int GetHeuristic(Node nodeA, Node nodeB) {
-        int dstX = Mathf.Abs(nodeA.gridX - nodeB.gridX);
-        int dstY = Mathf.Abs(nodeA.gridY - nodeB.gridY);
-        return dstX + dstY;
+    float GetHeuristic(Node nodeA, Node nodeB) {
+        float dstX = Mathf.Pow(nodeB.FieldX - nodeA.FieldX, 2f);
+        float dstY = Mathf.Pow(nodeB.FieldY - nodeA.FieldY, 2f);
+        return Mathf.Sqrt(dstX + dstY);
     }
 }
