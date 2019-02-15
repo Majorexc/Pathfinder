@@ -32,17 +32,18 @@ public class TouchHandler : MonoBehaviour {
                     return false;
                 
                 if (_targetCell != null) {
+                    _targetCell.Clear();
+                    _startCell.Clear();
                     _targetCell = null;
                     _startCell = null;
                 }
 
                 if (_startCell == null) {
                     _startCell = cell;
-                    Debug.Log("Found start");
-                }
-                else {
-                    Debug.Log("Found target");
+                    _startCell.SetAsStartCell();
+                } else {
                     _targetCell = cell;
+                    _targetCell.SetAsTargetCell();
                     return true;
                 }
             }

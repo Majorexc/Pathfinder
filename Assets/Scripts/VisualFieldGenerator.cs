@@ -21,7 +21,7 @@ public class VisualFieldGenerator : MonoBehaviour {
     void GenerateHG() {
         transform.DestroyAllChildren();
 
-        var path = EditorUtility.OpenFilePanel("Open map file", "", "txt");
+        var path = EditorUtility.OpenFilePanel("Open map file", "Assets/Maps", "txt");
         if (path.Length == 0) 
             return;
 
@@ -43,8 +43,8 @@ public class VisualFieldGenerator : MonoBehaviour {
         cell.transform.SetParent(transform);
         var cellScript = cell.GetComponent<Cell>();
         cellScript.IsWalkable = GetWalkable(x, y);
-        cellScript.FieldPosition = new Vector2Int(x, y);
-        cell.name = $"Cell {x}_{y}";
+        cellScript.FieldPosition = new Vector2Int(y, x);
+        cell.name = $"Cell {y}_{x}";
     }
  
     Vector3 GetPosByGrid(int i, int j) {

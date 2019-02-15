@@ -1,13 +1,22 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+
+using UnityEngine;
+
+using Zenject;
 
 public class Field : MonoBehaviour {
     Node[,] _field;
     Vector2Int _size;
-    AStarPathfinder _pathfinder;
+    
+    [Inject] APathfinder _pathfinder;
+    [Inject] VisualPath _pathVisualizer;
 
     void Awake() {
         CreateFieldModel();
-        _pathfinder = new AStarPathfinder(_field, _size);
+    }
+
+    void Start() {
+        _pathfinder.UpdateState(_field, _size);
     }
 
     void CreateFieldModel() {
@@ -26,12 +35,21 @@ public class Field : MonoBehaviour {
         
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
-                _field[x, y] = new Node(cells[x, y].IsWalkable, x, y);
+                _field[x, y] = new Node(cells[x, y].IsWalkable, x, y, cells[x, y].transform.position);
             }
         }
     }
 
     public void FindPath(Cell startCell, Cell targetCell) {
-        _pathfinder.FindPath(startCell.FieldPosition, targetCell.FieldPosition);
+        var rawPath = _pathfinder.FindPath(startCell.FieldPosition, targetCell.FieldPosition);
+        if (rawPath != null) {
+            var preparedPath = (from node in rawPath
+                               select node.WorldPos).ToArray();
+            
+            _pathVisualizer.ShowPath(preparedPath);
+        } else {
+            _pathVisualizer.Clear();
+            Debug.Log("Path not found");
+        }
     }
 }

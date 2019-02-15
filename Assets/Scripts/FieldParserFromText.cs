@@ -17,8 +17,8 @@ public static class FieldParserFromText {
             }
 
             for (int j = 0; j < size.y; j++) {
-                var y = int.TryParse(splitLine[j], out int val) ? val : 0;
-                field[i-1, j] = y;
+                var walkable = int.TryParse(splitLine[j], out int val) ? val : 0;
+                field[i-1, j] = walkable;
             }
         }
         
