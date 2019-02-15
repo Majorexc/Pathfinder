@@ -6,7 +6,6 @@ using UnityEngine;
 /// Simple map parser 
 /// </summary>
 public static class FieldParserFromText {
-    const char NEW_LINE = '\n';
     const char SPACE = ' ';
     
     /// <summary>
@@ -19,7 +18,7 @@ public static class FieldParserFromText {
         var size = Vector2Int.zero;
         
         try {
-            var splitText = text.Split(NEW_LINE);
+            var splitText = text.Split( new [] {Environment.NewLine}, StringSplitOptions.None);
             for (var i = 0; i < splitText.Length; i++) {
                 var line = splitText[i];
                 var splitLine = line.Split(SPACE);
