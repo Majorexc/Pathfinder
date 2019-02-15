@@ -15,12 +15,11 @@ public class TouchHandler : MonoBehaviour {
     [Inject] Field _field;
     
     void Update() {
-        if (Input.GetMouseButtonDown(0)) 
-            return;
-        
-        var screenPos = Input.mousePosition;
-        if (SelectStartAndTargetCells(screenPos)) {
-            _field.FindPath(_startCell, _targetCell);
+        if (Input.GetMouseButtonDown(0)) {
+            var screenPos = Input.mousePosition;
+            if (SelectStartAndTargetCells(screenPos)) {
+                _field.FindPath(_startCell, _targetCell);
+            }
         }
     }
     
